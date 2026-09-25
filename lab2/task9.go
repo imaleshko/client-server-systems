@@ -20,7 +20,7 @@ func task9() {
 		str2 = scanner.Text()
 
 		if len(str1) == 0 || len(str2) == 0 {
-			fmt.Printf("Введіть рядки! \n \n")
+			fmt.Printf("Введіть рядки!\n\n")
 			continue
 		}
 
