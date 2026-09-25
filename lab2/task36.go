@@ -47,17 +47,17 @@ func task36() {
 	scanner.Scan()
 	a := scanner.Text()
 
-	strMap := make(map[int]string)
+	mp := make(map[int]string)
 
-	for i := 0; i < len(keys); i++ {
-		strMap[keys[i]] = values[i]
+	for i := range keys {
+		mp[keys[i]] = values[i]
 	}
 
-	for key, value := range strMap {
+	for key, value := range mp {
 		if value == a {
-			delete(strMap, key)
+			delete(mp, key)
 		}
 	}
 
-	fmt.Println(strMap)
+	fmt.Println(mp)
 }
