@@ -15,5 +15,5 @@ func task11() {
 
 	strField := strings.Fields(str)
 
-	fmt.Printf("Отримано масив із %d елементів %v", len(strField), strField)
+	fmt.Printf("Отримано масив із %d елементів %v\n", len(strField), strField)
 }

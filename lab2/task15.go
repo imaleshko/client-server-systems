@@ -78,5 +78,5 @@ func task15() {
 
 	nums[b-1] = a
 
-	fmt.Print(nums)
+	fmt.Println(nums)
 }
