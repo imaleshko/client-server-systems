@@ -10,8 +10,8 @@ import (
 func task9() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	x := readCoordinate(scanner, "Введіть x:")
-	y := readCoordinate(scanner, "Введіть y:")
+	x := readCoordinate09(scanner, "Введіть x:")
+	y := readCoordinate09(scanner, "Введіть y:")
 
 	isXPositive := x > 0
 	isYPositive := y > 0
@@ -43,7 +43,7 @@ func task9() {
 	}
 }
 
-func readCoordinate(scanner *bufio.Scanner, prompt string) float64 {
+func readCoordinate09(scanner *bufio.Scanner, prompt string) float64 {
 	for {
 		fmt.Println(prompt)
 		scanner.Scan()
