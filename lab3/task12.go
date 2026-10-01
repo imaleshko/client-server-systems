@@ -5,15 +5,18 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func task12() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Println("Введіть значення:")
+	fmt.Println("Введіть значення: ")
 	scanner.Scan()
 
-	_, err := strconv.ParseFloat(scanner.Text(), 64)
+	input := strings.TrimSpace(scanner.Text())
+
+	_, err := strconv.ParseFloat(input, 64)
 	if err != nil {
 		fmt.Println("Other")
 		return

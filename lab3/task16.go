@@ -10,7 +10,7 @@ import (
 func task16() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Println("Введіть номер місяця:")
+	fmt.Println("Введіть номер місяця: ")
 	scanner.Scan()
 
 	month, err := strconv.Atoi(scanner.Text())

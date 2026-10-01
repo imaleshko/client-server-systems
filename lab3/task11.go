@@ -10,8 +10,8 @@ import (
 func task11() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	x := readCoordinate11(scanner, "Введіть x:")
-	y := readCoordinate11(scanner, "Введіть y:")
+	x := readCoordinate11(scanner, "Введіть x: ")
+	y := readCoordinate11(scanner, "Введіть y: ")
 
 	if x*x+y*y <= 25 {
 		fmt.Println("YES")

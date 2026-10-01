@@ -10,8 +10,8 @@ import (
 func task9() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	x := readCoordinate09(scanner, "Введіть x:")
-	y := readCoordinate09(scanner, "Введіть y:")
+	x := readCoordinate09(scanner, "Введіть x: ")
+	y := readCoordinate09(scanner, "Введіть y: ")
 
 	isXPositive := x > 0
 	isYPositive := y > 0
