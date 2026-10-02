@@ -5,5 +5,6 @@ func main() {
 	//task11()
 	//task12()
 	//task16()
-	task17()
+	//task17()
+	task21()
 }
