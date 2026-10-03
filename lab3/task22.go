@@ -8,9 +8,10 @@ import (
 	"strings"
 )
 
-func task21() {
+func task22() {
 	scanner := bufio.NewScanner(os.Stdin)
-	product := 1
+	var sum int
+	var nums []int
 
 	fmt.Print("Введіть числа: ")
 	scanner.Scan()
@@ -23,8 +24,14 @@ func task21() {
 			fmt.Print("У введеному рядку є нечисловий елемент\n")
 			continue
 		}
-		product *= num
+		nums = append(nums, num)
 	}
 
-	fmt.Printf("Добуток чисел: %d\n", product)
+	for i := range nums {
+		if i%2 != 0 {
+			sum += nums[i]
+		}
+	}
+
+	fmt.Printf("Сума елементів з непарним індексом: %d\n", sum)
 }
