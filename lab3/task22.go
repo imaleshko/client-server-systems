@@ -27,9 +27,9 @@ func task22() {
 		nums = append(nums, num)
 	}
 
-	for i := range nums {
-		if i%2 != 0 {
-			sum += nums[i]
+	for idx, val := range nums {
+		if idx%2 != 0 {
+			sum += val
 		}
 	}
 
