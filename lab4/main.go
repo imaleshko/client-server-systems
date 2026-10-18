@@ -10,5 +10,6 @@ func main() {
 	//task32()
 	//task36()
 	//task40()
-	task43()
+	//task43()
+	task47()
 }
