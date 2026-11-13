@@ -10,16 +10,16 @@ import (
 )
 
 type Product struct {
-	Name  string
-	Price float64
+	name  string
+	price float64
 }
 
 type Order struct {
-	Products []Product
-	Discount float64
+	products []Product
+	discount float64
 }
 
-func (order *Order) add(name string, price float64) error {
+func (o *Order) add(name string, price float64) error {
 	if name == "" {
 		return errors.New("назва продукту не може бути порожньою")
 	}
@@ -28,20 +28,20 @@ func (order *Order) add(name string, price float64) error {
 	}
 
 	product := Product{
-		Name:  name,
-		Price: price,
+		name:  name,
+		price: price,
 	}
-	order.Products = append(order.Products, product)
+	o.products = append(o.products, product)
 
 	return nil
 }
 
-func (order *Order) totalPriceOfProductInOrder(productName string) (float64, error) {
+func (o *Order) totalPriceOfProductInOrder(productName string) (float64, error) {
 	var totalPrice float64
 	isFound := false
-	for _, p := range order.Products {
-		if p.Name == productName {
-			totalPrice += p.Price
+	for _, p := range o.products {
+		if p.name == productName {
+			totalPrice += p.price
 			isFound = true
 		}
 	}
@@ -53,25 +53,25 @@ func (order *Order) totalPriceOfProductInOrder(productName string) (float64, err
 	return totalPrice, nil
 }
 
-func (order *Order) totalPriceOfOrder() float64 {
+func (o *Order) totalPriceOfOrder() float64 {
 	var totalPrice float64
-	for _, p := range order.Products {
-		totalPrice += p.Price
+	for _, p := range o.products {
+		totalPrice += p.price
 	}
 
-	return totalPrice * (1 - order.Discount/100)
+	return totalPrice * (1 - o.discount/100)
 }
 
-func (order *Order) discountProduct(productName string, percentage float64) error {
+func (o *Order) discountProduct(productName string, percentage float64) error {
 	if percentage < 1 || percentage > 100 {
 		return errors.New("відсоток знижки має бути від 1 до 100")
 	}
 
 	isFound := false
-	for i := range order.Products {
-		if order.Products[i].Name == productName {
-			discountPrice := order.Products[i].Price * percentage / 100
-			order.Products[i].Price -= discountPrice
+	for i := range o.products {
+		if o.products[i].name == productName {
+			discountPrice := o.products[i].price * percentage / 100
+			o.products[i].price -= discountPrice
 			isFound = true
 		}
 	}
@@ -83,28 +83,28 @@ func (order *Order) discountProduct(productName string, percentage float64) erro
 	return nil
 }
 
-func (order *Order) discountOrder(percentage float64) error {
+func (o *Order) discountOrder(percentage float64) error {
 	if percentage < 1 || percentage > 100 {
 		return errors.New("відсоток знижки має бути від 1 до 100")
 	}
 
-	order.Discount = percentage
+	o.discount = percentage
 
 	return nil
 }
 
-func (order *Order) print() {
+func (o *Order) print() {
 	fmt.Println("\nДрук замовлення:")
 
-	if len(order.Products) == 0 {
+	if len(o.products) == 0 {
 		fmt.Println("Замовлення пусте")
 		return
 	}
 
-	fmt.Printf("Сума замовлення: %.2f\n", order.totalPriceOfOrder())
+	fmt.Printf("Сума замовлення: %.2f\n", o.totalPriceOfOrder())
 
-	for i, p := range order.Products {
-		fmt.Printf("Продукт №%d: %s - %.2f\n", i+1, p.Name, p.Price)
+	for i, p := range o.products {
+		fmt.Printf("Продукт №%d: %s - %.2f\n", i+1, p.name, p.price)
 	}
 }
 

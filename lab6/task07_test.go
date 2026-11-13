@@ -26,8 +26,8 @@ func TestAdd(t *testing.T) {
 				t.Errorf("add() error = %v, isError %v", err, tc.isError)
 			}
 
-			if !tc.isError && len(order.Products) != 1 {
-				t.Errorf("Очікувалось 1 товар в замовленні, отримано %d", len(order.Products))
+			if !tc.isError && len(order.products) != 1 {
+				t.Errorf("Очікувалось 1 товар в замовленні, отримано %d", len(order.products))
 			}
 		})
 	}
@@ -132,8 +132,8 @@ func TestDiscountProduct(t *testing.T) {
 				t.Errorf("discountProduct() error = %v, isError %v", err, tc.isError)
 			}
 
-			if order.Products[0].Price != tc.expectedPrice {
-				t.Errorf("Очікувана ціна %.2f, отримано %.2f", tc.expectedPrice, order.Products[0].Price)
+			if order.products[0].price != tc.expectedPrice {
+				t.Errorf("Очікувана ціна %.2f, отримано %.2f", tc.expectedPrice, order.products[0].price)
 			}
 		})
 	}
@@ -146,8 +146,8 @@ func TestDiscountOrder(t *testing.T) {
 	if err != nil {
 		t.Errorf("discountOrder() error = %v)", err)
 	}
-	if order.Discount != 15 {
-		t.Errorf("Очікувалась знижка 15, отримано %.2f", order.Discount)
+	if order.discount != 15 {
+		t.Errorf("Очікувалась знижка 15, отримано %.2f", order.discount)
 	}
 
 	err = order.discountOrder(0)
