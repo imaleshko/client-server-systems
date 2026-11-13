@@ -94,7 +94,7 @@ func (o *Order) discountOrder(percentage float64) error {
 }
 
 func (o *Order) print() {
-	fmt.Println("\nДрук замовлення:")
+	fmt.Println("Друк замовлення:")
 
 	if len(o.products) == 0 {
 		fmt.Println("Замовлення пусте")

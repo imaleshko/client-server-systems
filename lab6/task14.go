@@ -9,10 +9,10 @@ import (
 )
 
 type Device interface {
-	GetClass() string
-	GetModel() string
-	GetNumber() int
-	GetPrice() float64
+	getClass() string
+	getModel() string
+	getNumber() int
+	getPrice() float64
 	PrintInfo()
 }
 type Engine struct {
@@ -22,10 +22,10 @@ type Engine struct {
 	horsepower int
 }
 
-func (e Engine) GetClass() string  { return "Двигун" }
-func (e Engine) GetModel() string  { return e.model }
-func (e Engine) GetNumber() int    { return e.number }
-func (e Engine) GetPrice() float64 { return e.price }
+func (e Engine) getClass() string  { return "Двигун" }
+func (e Engine) getModel() string  { return e.model }
+func (e Engine) getNumber() int    { return e.number }
+func (e Engine) getPrice() float64 { return e.price }
 func (e Engine) PrintInfo() {
 	fmt.Printf("Двигун моделі %s: номер %d, ціна: %.2f, потужність: %d к.с.\n", e.model, e.number, e.price, e.horsepower)
 }
@@ -37,10 +37,10 @@ type Pump struct {
 	capacity float64
 }
 
-func (p Pump) GetClass() string  { return "Насос" }
-func (p Pump) GetModel() string  { return p.model }
-func (p Pump) GetNumber() int    { return p.number }
-func (p Pump) GetPrice() float64 { return p.price }
+func (p Pump) getClass() string  { return "Насос" }
+func (p Pump) getModel() string  { return p.model }
+func (p Pump) getNumber() int    { return p.number }
+func (p Pump) getPrice() float64 { return p.price }
 func (p Pump) PrintInfo() {
 	fmt.Printf("Насос моделі %s: номер %d, ціна: %.2f, продуктивність: %.1f л/хв\n", p.model, p.number, p.price, p.capacity)
 }
@@ -52,10 +52,10 @@ type Turbine struct {
 	rpm    int
 }
 
-func (t Turbine) GetClass() string  { return "Турбіна" }
-func (t Turbine) GetModel() string  { return t.model }
-func (t Turbine) GetNumber() int    { return t.number }
-func (t Turbine) GetPrice() float64 { return t.price }
+func (t Turbine) getClass() string  { return "Турбіна" }
+func (t Turbine) getModel() string  { return t.model }
+func (t Turbine) getNumber() int    { return t.number }
+func (t Turbine) getPrice() float64 { return t.price }
 func (t Turbine) PrintInfo() {
 	fmt.Printf("Турбіна моделі %s: номер %d, ціна: %.2f, обертальна швидкість: %d об/хв\n", t.model, t.number, t.price, t.rpm)
 }
@@ -65,14 +65,14 @@ type Machine struct {
 }
 
 func (m *Machine) addDevice(device Device) error {
-	if device.GetNumber() <= 0 {
+	if device.getNumber() <= 0 {
 		return errors.New("номер повинен бути додатним числом")
 	}
-	if device.GetPrice() <= 0 {
+	if device.getPrice() <= 0 {
 		return errors.New("ціна повинна бути додатним числом")
 	}
 
-	if _, err := m.searchDeviceByNumber(device.GetNumber()); err == nil {
+	if _, err := m.searchDeviceByNumber(device.getNumber()); err == nil {
 		return errors.New("пристрій з таким номером вже існує")
 	}
 
@@ -86,7 +86,7 @@ func (m *Machine) deleteDevice(number int) error {
 	}
 
 	for i, device := range m.devices {
-		if device.GetNumber() == number {
+		if device.getNumber() == number {
 			m.devices = append(m.devices[:i], m.devices[i+1:]...)
 			return nil
 		}
@@ -104,7 +104,7 @@ func (m *Machine) searchDeviceByModel(class, model string) (Device, error) {
 	}
 
 	for _, device := range m.devices {
-		if device.GetClass() == class && device.GetModel() == model {
+		if device.getClass() == class && device.getModel() == model {
 			return device, nil
 		}
 	}
@@ -118,7 +118,7 @@ func (m *Machine) searchDeviceByNumber(number int) (Device, error) {
 	}
 
 	for _, device := range m.devices {
-		if device.GetNumber() == number {
+		if device.getNumber() == number {
 			return device, nil
 		}
 	}
@@ -129,13 +129,13 @@ func (m *Machine) searchDeviceByNumber(number int) (Device, error) {
 func (m *Machine) totalPriceOfDevices() float64 {
 	totalPrice := 0.0
 	for _, device := range m.devices {
-		totalPrice += device.GetPrice()
+		totalPrice += device.getPrice()
 	}
 	return totalPrice
 }
 
 func (m *Machine) printMachine() {
-	fmt.Println("\nСтан системи:")
+	fmt.Println("Стан системи:")
 
 	if len(m.devices) == 0 {
 		fmt.Println("Система порожня")
