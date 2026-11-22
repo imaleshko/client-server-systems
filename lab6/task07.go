@@ -5,25 +5,26 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type Product struct {
 	name  string
-	price float64
+	price decimal.Decimal
 }
 
 type Order struct {
 	products []Product
-	discount float64
+	discount decimal.Decimal
 }
 
-func (o *Order) add(name string, price float64) error {
+func (o *Order) add(name string, price decimal.Decimal) error {
 	if name == "" {
 		return errors.New("назва продукту не може бути порожньою")
 	}
-	if price <= 0 {
+	if price.Compare(decimal.Zero) <= 0 {
 		return errors.New("ціна повинна бути додатним числом")
 	}
 
@@ -36,42 +37,52 @@ func (o *Order) add(name string, price float64) error {
 	return nil
 }
 
-func (o *Order) totalPriceOfProductInOrder(productName string) (float64, error) {
-	var totalPrice float64
+func (o *Order) totalPriceOfProductInOrder(productName string) (decimal.Decimal, error) {
+	var totalPrice decimal.Decimal
 	isFound := false
 	for _, p := range o.products {
 		if p.name == productName {
-			totalPrice += p.price
+			totalPrice = totalPrice.Add(p.price)
 			isFound = true
 		}
 	}
 
 	if !isFound {
-		return 0, errors.New("продукт не знайдено в замовленні")
+		return decimal.Zero, errors.New("продукт не знайдено в замовленні")
 	}
 
 	return totalPrice, nil
 }
 
-func (o *Order) totalPriceOfOrder() float64 {
-	var totalPrice float64
+func (o *Order) totalPriceOfOrder() decimal.Decimal {
+	var totalPrice decimal.Decimal
 	for _, p := range o.products {
-		totalPrice += p.price
+		totalPrice = totalPrice.Add(p.price)
 	}
 
-	return totalPrice * (1 - o.discount/100)
+	if !o.discount.IsZero() {
+		one := decimal.NewFromInt(1)
+		hundred := decimal.NewFromInt(100)
+
+		totalPrice = totalPrice.Mul(one.Sub(o.discount.Div(hundred)))
+	}
+
+	return totalPrice
 }
 
-func (o *Order) discountProduct(productName string, percentage float64) error {
-	if percentage < 1 || percentage > 100 {
+func (o *Order) discountProduct(productName string, percentage decimal.Decimal) error {
+	one := decimal.NewFromInt(1)
+	hundred := decimal.NewFromInt(100)
+	if percentage.Compare(one) < 0 || percentage.Compare(hundred) > 0 {
 		return errors.New("відсоток знижки має бути від 1 до 100")
 	}
 
 	isFound := false
+	discount := percentage.Div(hundred)
 	for i := range o.products {
 		if o.products[i].name == productName {
-			discountPrice := o.products[i].price * percentage / 100
-			o.products[i].price -= discountPrice
+			discountPrice := o.products[i].price.Mul(discount)
+			o.products[i].price = o.products[i].price.Sub(discountPrice)
 			isFound = true
 		}
 	}
@@ -83,8 +94,10 @@ func (o *Order) discountProduct(productName string, percentage float64) error {
 	return nil
 }
 
-func (o *Order) discountOrder(percentage float64) error {
-	if percentage < 1 || percentage > 100 {
+func (o *Order) discountOrder(percentage decimal.Decimal) error {
+	one := decimal.NewFromInt(1)
+	hundred := decimal.NewFromInt(100)
+	if percentage.Compare(one) < 0 || percentage.Compare(hundred) > 0 {
 		return errors.New("відсоток знижки має бути від 1 до 100")
 	}
 
@@ -101,10 +114,10 @@ func (o *Order) print() {
 		return
 	}
 
-	fmt.Printf("Сума замовлення: %.2f\n", o.totalPriceOfOrder())
+	fmt.Printf("Сума замовлення: %s\n", o.totalPriceOfOrder().StringFixed(2))
 
 	for i, p := range o.products {
-		fmt.Printf("Продукт №%d: %s - %.2f\n", i+1, p.name, p.price)
+		fmt.Printf("Продукт №%d: %s - %s\n", i+1, p.name, p.price.StringFixed(2))
 	}
 }
 
@@ -132,7 +145,7 @@ func task07() {
 			name := readLine(scanner, "Введіть назву товару:")
 
 			priceStr := readLine(scanner, "Введіть ціну товару:")
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := decimal.NewFromString(priceStr)
 			if err != nil {
 				fmt.Println("Помилка: ціна повинна бути числом")
 				continue
@@ -146,7 +159,7 @@ func task07() {
 			name := readLine(scanner, "Введіть назву товару:")
 
 			percentageStr := readLine(scanner, "Введіть відсоток знижки:")
-			percentage, err := strconv.ParseFloat(percentageStr, 64)
+			percentage, err := decimal.NewFromString(percentageStr)
 			if err != nil {
 				fmt.Println("Помилка: відсоток знижки повинен бути числом")
 				continue
@@ -158,7 +171,7 @@ func task07() {
 			}
 		case "4":
 			percentageStr := readLine(scanner, "Введіть відсоток знижки:")
-			percentage, err := strconv.ParseFloat(percentageStr, 64)
+			percentage, err := decimal.NewFromString(percentageStr)
 			if err != nil {
 				fmt.Println("Помилка: відсоток знижки повинен бути числом")
 				continue
@@ -177,7 +190,7 @@ func task07() {
 				continue
 			}
 
-			fmt.Printf("Загальна вартість товарів типу '%s': %.2f\n", name, total)
+			fmt.Printf("Загальна вартість товарів типу '%s': %s\n", name, total.StringFixed(2))
 		case "6":
 			return
 		default:

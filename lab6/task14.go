@@ -6,58 +6,60 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/shopspring/decimal"
 )
 
 type Device interface {
 	getClass() string
 	getModel() string
 	getNumber() int
-	getPrice() float64
+	getPrice() decimal.Decimal
 	PrintInfo()
 }
 type Engine struct {
 	model      string
 	number     int
-	price      float64
+	price      decimal.Decimal
 	horsepower int
 }
 
-func (e Engine) getClass() string  { return "Двигун" }
-func (e Engine) getModel() string  { return e.model }
-func (e Engine) getNumber() int    { return e.number }
-func (e Engine) getPrice() float64 { return e.price }
+func (e Engine) getClass() string          { return "Двигун" }
+func (e Engine) getModel() string          { return e.model }
+func (e Engine) getNumber() int            { return e.number }
+func (e Engine) getPrice() decimal.Decimal { return e.price }
 func (e Engine) PrintInfo() {
-	fmt.Printf("Двигун моделі %s: номер %d, ціна: %.2f, потужність: %d к.с.\n", e.model, e.number, e.price, e.horsepower)
+	fmt.Printf("Двигун моделі %s: номер %d, ціна: %s, потужність: %d к.с.\n", e.model, e.number, e.price.StringFixed(2), e.horsepower)
 }
 
 type Pump struct {
 	model    string
 	number   int
-	price    float64
+	price    decimal.Decimal
 	capacity float64
 }
 
-func (p Pump) getClass() string  { return "Насос" }
-func (p Pump) getModel() string  { return p.model }
-func (p Pump) getNumber() int    { return p.number }
-func (p Pump) getPrice() float64 { return p.price }
+func (p Pump) getClass() string          { return "Насос" }
+func (p Pump) getModel() string          { return p.model }
+func (p Pump) getNumber() int            { return p.number }
+func (p Pump) getPrice() decimal.Decimal { return p.price }
 func (p Pump) PrintInfo() {
-	fmt.Printf("Насос моделі %s: номер %d, ціна: %.2f, продуктивність: %.1f л/хв\n", p.model, p.number, p.price, p.capacity)
+	fmt.Printf("Насос моделі %s: номер %d, ціна: %s, продуктивність: %.1f л/хв\n", p.model, p.number, p.price.StringFixed(2), p.capacity)
 }
 
 type Turbine struct {
 	model  string
 	number int
-	price  float64
+	price  decimal.Decimal
 	rpm    int
 }
 
-func (t Turbine) getClass() string  { return "Турбіна" }
-func (t Turbine) getModel() string  { return t.model }
-func (t Turbine) getNumber() int    { return t.number }
-func (t Turbine) getPrice() float64 { return t.price }
+func (t Turbine) getClass() string          { return "Турбіна" }
+func (t Turbine) getModel() string          { return t.model }
+func (t Turbine) getNumber() int            { return t.number }
+func (t Turbine) getPrice() decimal.Decimal { return t.price }
 func (t Turbine) PrintInfo() {
-	fmt.Printf("Турбіна моделі %s: номер %d, ціна: %.2f, обертальна швидкість: %d об/хв\n", t.model, t.number, t.price, t.rpm)
+	fmt.Printf("Турбіна моделі %s: номер %d, ціна: %s, обертальна швидкість: %d об/хв\n", t.model, t.number, t.price.StringFixed(2), t.rpm)
 }
 
 type Machine struct {
@@ -68,7 +70,7 @@ func (m *Machine) addDevice(device Device) error {
 	if device.getNumber() <= 0 {
 		return errors.New("номер повинен бути додатним числом")
 	}
-	if device.getPrice() <= 0 {
+	if device.getPrice().Compare(decimal.Zero) <= 0 {
 		return errors.New("ціна повинна бути додатним числом")
 	}
 
@@ -126,10 +128,10 @@ func (m *Machine) searchDeviceByNumber(number int) (Device, error) {
 	return nil, errors.New("пристрій не знайдено")
 }
 
-func (m *Machine) totalPriceOfDevices() float64 {
-	totalPrice := 0.0
+func (m *Machine) totalPriceOfDevices() decimal.Decimal {
+	var totalPrice decimal.Decimal
 	for _, device := range m.devices {
-		totalPrice += device.getPrice()
+		totalPrice = totalPrice.Add(device.getPrice())
 	}
 	return totalPrice
 }
@@ -142,7 +144,7 @@ func (m *Machine) printMachine() {
 		return
 	}
 
-	fmt.Printf("Сума вартості пристроїв: %.2f\n", m.totalPriceOfDevices())
+	fmt.Printf("Сума вартості пристроїв: %s\n", m.totalPriceOfDevices().StringFixed(2))
 
 	for _, p := range m.devices {
 		p.PrintInfo()
@@ -176,7 +178,7 @@ func task14() {
 			}
 
 			priceStr := readLine(scanner, "Введіть ціну товару:")
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := decimal.NewFromString(priceStr)
 			if err != nil {
 				fmt.Println("Помилка: ціна повинна бути числом")
 				continue
@@ -258,7 +260,7 @@ func task14() {
 			fmt.Println("Знайдений пристрій:")
 			device.PrintInfo()
 		case "6":
-			fmt.Println("Сума вартості пристроїв:", machine.totalPriceOfDevices())
+			fmt.Println("Сума вартості пристроїв:", machine.totalPriceOfDevices().StringFixed(2))
 		case "7":
 			return
 		default:

@@ -2,19 +2,21 @@ package main
 
 import (
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestAdd(t *testing.T) {
 	tests := []struct {
 		name        string
 		productName string
-		price       float64
+		price       decimal.Decimal
 		isError     bool
 	}{
-		{"Успішне додавання", "Яблуко", 10.5, false},
-		{"Порожня назва", "", 10.5, true},
-		{"Нульова ціна", "Банан", 0, true},
-		{"Від'ємна ціна", "Груша", -5.0, true},
+		{"Успішне додавання", "Яблуко", decimal.RequireFromString("10.5"), false},
+		{"Порожня назва", "", decimal.RequireFromString("10.5"), true},
+		{"Нульова ціна", "Банан", decimal.Zero, true},
+		{"Відʼємна ціна", "Груша", decimal.RequireFromString("-5.0"), true},
 	}
 
 	for _, tc := range tests {
@@ -27,7 +29,7 @@ func TestAdd(t *testing.T) {
 			}
 
 			if !tc.isError && len(order.products) != 1 {
-				t.Errorf("Очікувалось 1 товар в замовленні, отримано %d", len(order.products))
+				t.Errorf("Очікувався 1 товар в замовленні, отримано %d", len(order.products))
 			}
 		})
 	}
@@ -35,28 +37,25 @@ func TestAdd(t *testing.T) {
 
 func TestTotalPriceOfProductInOrder(t *testing.T) {
 	order := &Order{}
-	err := order.add("Кава", 50)
-	if err != nil {
-		t.Errorf("totalPriceOfProductInOrder() error = %v)", err)
+	if err := order.add("Кава", decimal.NewFromInt(50)); err != nil {
+		t.Fatalf("add() error = %v", err)
 	}
-	err = order.add("Чай", 30)
-	if err != nil {
-		t.Errorf("totalPriceOfProductInOrder() error = %v)", err)
+	if err := order.add("Чай", decimal.NewFromInt(30)); err != nil {
+		t.Fatalf("add() error = %v", err)
 	}
-	err = order.add("Кава", 50)
-	if err != nil {
-		t.Errorf("totalPriceOfProductInOrder() error = %v)", err)
+	if err := order.add("Кава", decimal.NewFromInt(50)); err != nil {
+		t.Fatalf("add() error = %v", err)
 	}
 
 	tests := []struct {
 		name        string
 		productName string
-		wantTotal   float64
+		wantTotal   decimal.Decimal
 		isError     bool
 	}{
-		{"Кілька товарів одного типу", "Кава", 100, false},
-		{"Один товар такого типу", "Чай", 30, false},
-		{"Товар не знайдено", "Сік", 0, true},
+		{"Кілька товарів одного типу", "Кава", decimal.NewFromInt(100), false},
+		{"Один товар такого типу", "Чай", decimal.NewFromInt(30), false},
+		{"Товар не знайдено", "Сік", decimal.Zero, true},
 	}
 
 	for _, tc := range tests {
@@ -67,8 +66,8 @@ func TestTotalPriceOfProductInOrder(t *testing.T) {
 				t.Errorf("totalPriceOfProductInOrder() error = %v, isError %v", err, tc.isError)
 				return
 			}
-			if got != tc.wantTotal {
-				t.Errorf("Очікувалось %.2f, отримано %.2f", tc.wantTotal, got)
+			if !got.Equal(tc.wantTotal) {
+				t.Errorf("Очікувалось %s, отримано %s", tc.wantTotal.StringFixed(2), got.StringFixed(2))
 			}
 		})
 	}
@@ -77,30 +76,29 @@ func TestTotalPriceOfProductInOrder(t *testing.T) {
 func TestTotalPriceOfOrder(t *testing.T) {
 	order := &Order{}
 
-	if got := order.totalPriceOfOrder(); got != 0 {
-		t.Errorf("Очікувалось 0, отримано %.2f", got)
+	if got := order.totalPriceOfOrder(); !got.IsZero() {
+		t.Errorf("Очікувалось 0, отримано %s", got.StringFixed(2))
 	}
 
-	err := order.add("Телефон", 1000)
-	if err != nil {
-		t.Errorf("totalPriceOfOrder() error = %v)", err)
+	if err := order.add("Телефон", decimal.NewFromInt(1000)); err != nil {
+		t.Fatalf("add() error = %v", err)
 	}
-	err = order.add("Чохол", 200)
-	if err != nil {
-		t.Errorf("totalPriceOfOrder() error = %v)", err)
+	if err := order.add("Чохол", decimal.NewFromInt(200)); err != nil {
+		t.Fatalf("add() error = %v", err)
 	}
 
-	if got := order.totalPriceOfOrder(); got != 1200 {
-		t.Errorf("Очікувалось 1200, отримано %.2f", got)
+	wantWithoutDiscount := decimal.NewFromInt(1200)
+	if got := order.totalPriceOfOrder(); !got.Equal(wantWithoutDiscount) {
+		t.Errorf("Очікувалось %s, отримано %s", wantWithoutDiscount.StringFixed(2), got.StringFixed(2))
 	}
 
-	err = order.discountOrder(10)
-	if err != nil {
-		t.Errorf("discountProduct() error = %v)", err)
+	if err := order.discountOrder(decimal.NewFromInt(10)); err != nil {
+		t.Fatalf("discountOrder() error = %v", err)
 	}
-	expected := 1200.0 * 0.9
-	if got := order.totalPriceOfOrder(); got != expected {
-		t.Errorf("Очікувалось %.2f, отримано %.2f", expected, got)
+
+	wantWithDiscount := decimal.NewFromInt(1080)
+	if got := order.totalPriceOfOrder(); !got.Equal(wantWithDiscount) {
+		t.Errorf("Очікувалось %s, отримано %s", wantWithDiscount.StringFixed(2), got.StringFixed(2))
 	}
 }
 
@@ -108,32 +106,31 @@ func TestDiscountProduct(t *testing.T) {
 	tests := []struct {
 		name          string
 		productName   string
-		percentage    float64
+		percentage    decimal.Decimal
 		isError       bool
-		expectedPrice float64
+		expectedPrice decimal.Decimal
 	}{
-		{"Успішна знижка 50%", "Ноутбук", 50, false, 500},
-		{"Знижка менше 1%", "Ноутбук", 0, true, 1000},
-		{"Знижка більше 100%", "Ноутбук", 150, true, 1000},
-		{"Товар не знайдено", "Мишка", 10, true, 1000},
+		{"Успішна знижка 50%", "Ноутбук", decimal.NewFromInt(50), false, decimal.NewFromInt(500)},
+		{"Знижка менше 1%", "Ноутбук", decimal.Zero, true, decimal.NewFromInt(1000)},
+		{"Знижка більше 100%", "Ноутбук", decimal.NewFromInt(150), true, decimal.NewFromInt(1000)},
+		{"Товар не знайдено", "Мишка", decimal.NewFromInt(10), true, decimal.NewFromInt(1000)},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			order := &Order{}
-			err := order.add("Ноутбук", 1000)
-			if err != nil {
-				t.Errorf("discountProduct() error = %v)", err)
+			if err := order.add("Ноутбук", decimal.NewFromInt(1000)); err != nil {
+				t.Fatalf("add() error = %v", err)
 			}
 
-			err = order.discountProduct(tc.productName, tc.percentage)
+			err := order.discountProduct(tc.productName, tc.percentage)
 
 			if (err != nil) != tc.isError {
 				t.Errorf("discountProduct() error = %v, isError %v", err, tc.isError)
 			}
 
-			if order.products[0].price != tc.expectedPrice {
-				t.Errorf("Очікувана ціна %.2f, отримано %.2f", tc.expectedPrice, order.products[0].price)
+			if !order.products[0].price.Equal(tc.expectedPrice) {
+				t.Errorf("Очікувана ціна %s, отримано %s", tc.expectedPrice.StringFixed(2), order.products[0].price.StringFixed(2))
 			}
 		})
 	}
@@ -142,21 +139,19 @@ func TestDiscountProduct(t *testing.T) {
 func TestDiscountOrder(t *testing.T) {
 	order := &Order{}
 
-	err := order.discountOrder(15)
-	if err != nil {
-		t.Errorf("discountOrder() error = %v)", err)
+	wantDiscount := decimal.NewFromInt(15)
+	if err := order.discountOrder(wantDiscount); err != nil {
+		t.Fatalf("discountOrder() error = %v", err)
 	}
-	if order.discount != 15 {
-		t.Errorf("Очікувалась знижка 15, отримано %.2f", order.discount)
+	if !order.discount.Equal(wantDiscount) {
+		t.Errorf("Очікувалась знижка %s, отримано %s", wantDiscount, order.discount)
 	}
 
-	err = order.discountOrder(0)
-	if err == nil {
+	if err := order.discountOrder(decimal.Zero); err == nil {
 		t.Error("Очікувалась помилка для знижки < 1%, але її немає")
 	}
 
-	err = order.discountOrder(101)
-	if err == nil {
+	if err := order.discountOrder(decimal.NewFromInt(101)); err == nil {
 		t.Error("Очікувалась помилка для знижки > 100%, але її немає")
 	}
 }
