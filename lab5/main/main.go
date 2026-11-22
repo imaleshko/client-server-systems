@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"generator"
 	"os"
 	"strconv"
+
+	"generator"
 )
 
 func main() {

@@ -53,7 +53,7 @@ func task28() {
 			continue
 		}
 		if b >= len(strField) {
-			fmt.Println("Введіть число менше за довжwину рядка!")
+			fmt.Println("Введіть число менше за довжину рядка!")
 			continue
 		}
 		if b < a {
