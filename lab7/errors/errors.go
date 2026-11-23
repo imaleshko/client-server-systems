@@ -37,7 +37,7 @@ func unwrap(err error) error {
 	if !ok {
 		return nil
 	}
-	return w.err
+	return w.Unwrap()
 }
 
 func Is(err, target error) bool {
